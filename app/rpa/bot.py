@@ -11,6 +11,11 @@ from app.db.insert_patient import save_patient
 from dotenv import load_dotenv
 import os
 
+from app.core.loggin_config import setup_basic_logging
+import logging
+
+setup_basic_logging()
+
 load_dotenv()
 
 USER=os.getenv("USER_S")
@@ -28,27 +33,27 @@ def scraper(job_id, fecha_inicial, fecha_final, limit):
 
         input_user = driver.find_element(By.ID, "username")
         input_user.send_keys(USER)
-        print("Escribiendo usuario")
+        logging.info("Escribiendo usuario")
         input_password = driver.find_element(By.ID, "password")
         input_password.send_keys(PASSWORD)
-        print("Escribiendo contraseña")
+        logging.info("Escribiendo contrasena")
 
         driver.find_element(By.ID, "_submit").click()
 
-        print("Inicio de sesión exitoso")
+        logging.info("Inicio de sesion exitoso")
 
         boton_facturacion = wait.until(EC.element_to_be_clickable(
             (By.XPATH, "//a[.//span[text()='Facturación']]")
         ))
         boton_facturacion.click()
-        print("Menu de facturación desplegado") #eliminar prints
+        logging.info("Menu de facturacion desplegado")
 
         boton_generar_factura = wait.until(EC.element_to_be_clickable((By.ID, "ui-id-73")))
         boton_generar_factura.click()
-        print("Accediendo a generar factura")
+        logging.info("Accediendo a generar factura")
 
         boton_fecha_inicial = wait.until(EC.visibility_of_element_located((By.ID, "dateInit")))
-        print("Llegando hasta fecha inicial")
+        logging.info("Llegando hasta fecha inicial")
         boton_fecha_inicial.clear()
         boton_fecha_inicial.send_keys(fecha_inicial)  
 
@@ -57,14 +62,14 @@ def scraper(job_id, fecha_inicial, fecha_final, limit):
         boton_fehca_final.send_keys(fecha_final)
 
         #Seleccion convenio
-        boton_convenio = driver.find_element(By.CSS_SELECTOR, "button[data-id='convenios_facturas']").click()
+        driver.find_element(By.CSS_SELECTOR, "button[data-id='convenios_facturas']").click()
         opcion_savia = wait.until(EC.element_to_be_clickable(
             (By.XPATH, "//span[@class='text' and text()='Savia Salud Subsidiado']")
         ))
         opcion_savia.click()
 
         #contrato facturas
-        boton_contrato_facturas = driver.find_element(By.CSS_SELECTOR, "button[data-id='contratos_facturas']").click()
+        driver.find_element(By.CSS_SELECTOR, "button[data-id='contratos_facturas']").click()
         opcion_contrato = wait.until(EC.element_to_be_clickable(
             (By.XPATH, "//span[@class='text' and text()='SAVIA SALUD SUBSIDIADO']")
         ))
@@ -86,21 +91,21 @@ def scraper(job_id, fecha_inicial, fecha_final, limit):
             (By.XPATH, "//span[@class='text' and text()='US']")
         ))
         opcion_us.click()
-        print("Modalidad 'US' seleccionada")
+        logging.info("Modalidad 'US' seleccionada")
 
         driver.find_element(By.ID, "buscar").click()
-        print("Búsqueda enviada, esperando resultados...")
+        logging.warning("Busqueda enviada, esperando resultados...")
 
         try:
             wait.until(EC.presence_of_element_located(
                 (By.CSS_SELECTOR, "#detalle_consulta tbody tr.odd, #detalle_consulta tbody tr.even")
             ))
-            print("Datos detectados en la tabla.")
+            logging.info("Datos detectados en la tabla")
         except TimeoutException:
-            print("La tabla cargó, pero parece estar vacía (sin registros).")
+            logging.error("La tabla cargo, pero parece estar vacía (sin registros).")
 
         #Obteniendo los datos
-        print("Empezando a obtener datos")
+        logging.info("Empezando a obtener datos")
 
         extracted_count = 0
         results = []
@@ -134,6 +139,6 @@ def scraper(job_id, fecha_inicial, fecha_final, limit):
 
         
     except Exception as e:
-        print(f"An error occurred: {e}")
+        logging.error(f"Ocurrió un error: {e}")
     finally:
         driver.quit()
