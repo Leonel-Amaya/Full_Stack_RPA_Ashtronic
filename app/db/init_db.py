@@ -46,6 +46,22 @@ def init_database():
     )
     """)
 
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS patients (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        job_id INT NOT NULL,
+        order_number VARCHAR(100), -- De columna "No. Orden"
+        patient_name VARCHAR(255), -- De columna "Nombres"
+        patient_document VARCHAR(50), -- De columna "Documento"
+        date_service DATETIME, -- De columna "Fecha cita"
+        sede VARCHAR(100), -- Del detalle (+)
+        contrato VARCHAR(50), -- Del columna cups
+        raw_row_json JSON, -- REQUERIDO por el criterio de "Trazabilidad" del documento
+        captured_ad TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT fk_job FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE
+    )
+    """)
+
     cursor.close()
     conn.close()
 
