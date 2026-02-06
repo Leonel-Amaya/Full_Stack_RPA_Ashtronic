@@ -5,6 +5,8 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 import json
 from datetime import datetime
+from selenium.common.exceptions import TimeoutException
+from app.db.insert_patient import save_patient
 
 from dotenv import load_dotenv
 import os
@@ -14,8 +16,7 @@ load_dotenv()
 USER=os.getenv("USER_S")
 PASSWORD=os.getenv("PASSWORD_S")
 
-#def scraper(job_id, fecha_inicial, fecha_final, limit, db):
-def scraper(fecha_inicial, fecha_final):
+def scraper(job_id, fecha_inicial, fecha_final, limit):
     chrome_options = Options()
 
     driver = webdriver.Chrome(options=chrome_options)
@@ -90,10 +91,45 @@ def scraper(fecha_inicial, fecha_final):
         driver.find_element(By.ID, "buscar").click()
         print("Búsqueda enviada, esperando resultados...")
 
-        # Esperar a que la tabla contenga filas que no sean el mensaje de "No hay datos"
-        wait.until(lambda d: len(d.find_elements(By.CSS_SELECTOR, "#tablaPacientes tbody tr")) > 0)
+        try:
+            wait.until(EC.presence_of_element_located(
+                (By.CSS_SELECTOR, "#detalle_consulta tbody tr.odd, #detalle_consulta tbody tr.even")
+            ))
+            print("Datos detectados en la tabla.")
+        except TimeoutException:
+            print("La tabla cargó, pero parece estar vacía (sin registros).")
 
-        print("Resultados encontrados")
+        #Obteniendo los datos
+        print("Empezando a obtener datos")
+
+        extracted_count = 0
+        results = []
+
+        rows = driver.find_elements(By.CSS_SELECTOR, "#detalle_consulta tbody tr")
+
+        for row in rows:
+            if extracted_count >= limit:
+                break
+
+            cells = row.find_elements(By.TAG_NAME, "td")
+            if len(cells) < 19: continue
+
+            data = {
+                "job_id": job_id,
+                "order_number": cells[2].get_attribute('textContent'),
+                "patient_name": cells[9].get_attribute('textContent'),
+                "patient_document": cells[8].get_attribute('textContent'),
+                "date_service": cells[0].get_attribute('textContent').strip(),
+                "sede": cells[16].get_attribute('textContent'),
+                "contrato": cells[13].get_attribute('textContent')
+            }
+            print(data)
+            data["raw_row_json"] = json.dumps(data)
+
+            save_patient(data)
+
+            results.append(data)
+            extracted_count += 1
 
 
         

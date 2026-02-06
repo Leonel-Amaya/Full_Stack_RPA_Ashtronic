@@ -17,7 +17,7 @@ class Extract(BaseModel):
 def extract(request: Extract):
     job_id = insert_job(request.fecha_inicial, request.fecha_final, request.limit)
 
-    scraper(str(request.fecha_inicial), str(request.fecha_final))
+    scraper(job_id, str(request.fecha_inicial), str(request.fecha_final), request.limit)
 
 
     return {
