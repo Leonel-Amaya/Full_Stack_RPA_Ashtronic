@@ -18,6 +18,7 @@ setup_basic_logging()
 
 load_dotenv()
 
+URL=os.getenv("URL_S")
 USER=os.getenv("USER_S")
 PASSWORD=os.getenv("PASSWORD_S")
 
@@ -29,7 +30,7 @@ def scraper(job_id, fecha_inicial, fecha_final, limit):
     wait = WebDriverWait(driver, 180)
 
     try:
-        driver.get("https://prodiagnosticotest.hiruko.com.co/login")
+        driver.get(URL)
 
         input_user = driver.find_element(By.ID, "username")
         input_user.send_keys(USER)
