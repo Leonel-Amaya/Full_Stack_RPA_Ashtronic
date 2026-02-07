@@ -1,17 +1,10 @@
 from fastapi import APIRouter
-from pydantic import BaseModel
 from app.db.insert_job import insert_job
-from datetime import date
 
 from app.rpa.bot import scraper
+from app.schemas.extractSchema import Extract
 
 router = APIRouter(prefix="/rpa", tags=["RPA"])
-
-class Extract(BaseModel):
-    fecha_inicial: date
-    fecha_final: date
-    limit: int
-
 
 @router.post("/extract")
 def extract(request: Extract):
