@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    container_name: rpa_ashtronic_api
+    ports:
+      - "8000:80"  # Mapea el puerto 8000 de tu PC al puerto 80 del contenedor
+    volumes:
+      - .:/code    # Permite que si cambias código en tu PC, se refleje en el contenedor (útil para desarrollo)
+    # Cargamos las variables del archivo .env local al contenedor
+    env_file:
+      - .env
+    environment:
+      - APP_NAME=Full_Stack_RPA_Ashtronic
+      # Sobrescribimos el HOST para que apunte al contenedor de base de datos
+      - DB_HOST=db
+    depends_on:
+      - db
+    # El comando reload permite reiniciar el servidor si detecta cambios en el código
+    command: uvicorn app.main:app --host 0.0.0.0 --port 80 --reload
+
+  db:
+    image: mysql:8.0
+    container_name: rpa_ashtronic_db
+    restart: always
+    environment:
+      # Estas variables también se leen de tu archivo .env local
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    ports:
+      - "3307:3306" # Usamos el puerto 3307 en tu PC para no chocar si ya tienes MySQL instalado
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  db_data:
