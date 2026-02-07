@@ -35,6 +35,13 @@ services:
     volumes:
       - db_data:/var/lib/mysql
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+  
+  selenium:
+    image: selenium/standalone-chrome:latest
+    container_name: rpa_selenium_chrome
+    ports:
+      - "4444:4444" # Puerto estándar de Selenium Grid
+    shm_size: "2gb" # VITAL: Aumenta la memoria compartida para que Chrome no crashee
 
 volumes:
   db_data:
