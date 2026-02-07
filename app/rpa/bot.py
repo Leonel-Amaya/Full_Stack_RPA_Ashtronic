@@ -25,8 +25,16 @@ PASSWORD=os.getenv("PASSWORD_S")
 def scraper(job_id, fecha_inicial, fecha_final, limit):
     chrome_options = Options()
 
-    driver = webdriver.Chrome(options=chrome_options)
-    chrome_options.add_argument("--headless")
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--disable-dev-shm-usage')
+    chrome_options.add_argument("--headless") 
+    chrome_options.add_argument("--window-size=1920,1080")
+
+    driver = webdriver.Remote(
+        command_executor='http://selenium:4444/wd/hub',
+        options=chrome_options
+    )
+
     wait = WebDriverWait(driver, 180)
 
     try:
