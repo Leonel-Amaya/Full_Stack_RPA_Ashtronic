@@ -26,7 +26,7 @@ def scraper(job_id, fecha_inicial, fecha_final, limit):
     chrome_options = Options()
 
     driver = webdriver.Chrome(options=chrome_options)
-    #chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--headless")
     wait = WebDriverWait(driver, 180)
 
     try:
